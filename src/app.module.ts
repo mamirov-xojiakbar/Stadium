@@ -20,6 +20,9 @@ import { MediaModule } from './media/media.module';
 import { BotModule } from './bot/bot.module';
 import { TelegrafModule } from 'nestjs-telegraf';
 import { BOT_NAME } from './app.constants';
+import { CommentsModule } from './comments/comments.module';
+import { Comment } from './comments/models/comment.model';
+import { Bot } from './bot/models/bot.model';
 
 @Module({
   imports: [
@@ -39,7 +42,17 @@ import { BOT_NAME } from './app.constants';
       username: process.env.POSTGRES_USER,
       password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRES_DB,
-      models: [User, Category, Comfort, District, Region, Admin, Stadium],
+      models: [
+        User,
+        Category,
+        Comfort,
+        District,
+        Region,
+        Admin,
+        Stadium,
+        Comment,
+        Bot,
+      ],
       autoLoadModels: true,
       sync: { alter: true },
       logging: false,
@@ -54,6 +67,7 @@ import { BOT_NAME } from './app.constants';
     StadiumModule,
     MediaModule,
     BotModule,
+    CommentsModule,
   ],
   controllers: [],
   providers: [],
