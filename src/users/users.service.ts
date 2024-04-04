@@ -3,9 +3,9 @@ import {
   ForbiddenException,
   Injectable,
   InternalServerErrorException,
-} from '@nestjs/common'; // NestJS'dan kutilayotgan qismlarni import qilamiz
-import { CreateUserDto } from './dto/create-user.dto'; // Foydalanuvchi yaratish uchun DTO-ni import qilamiz
-import { UpdateUserDto } from './dto/update-user.dto'; // Foydalanuvchi ma'lumotlarini yangilash uchun DTO-ni import qilamiz
+} from '@nestjs/common'; 
+import { CreateUserDto } from './dto/create-user.dto'; 
+import { UpdateUserDto } from './dto/update-user.dto'; 
 import { InjectModel } from '@nestjs/sequelize';
 import { User } from './model/user.model';
 import { JwtService } from '@nestjs/jwt';
