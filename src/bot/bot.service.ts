@@ -1,6 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { CreateBotDto } from './dto/create-bot.dto';
-import { UpdateBotDto } from './dto/update-bot.dto';
 import { InjectModel } from '@nestjs/sequelize';
 import { Bot } from './models/bot.model';
 import { InjectBot } from 'nestjs-telegraf';
