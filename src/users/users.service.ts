@@ -3,9 +3,9 @@ import {
   ForbiddenException,
   Injectable,
   InternalServerErrorException,
-} from '@nestjs/common'; 
-import { CreateUserDto } from './dto/create-user.dto'; 
-import { UpdateUserDto } from './dto/update-user.dto'; 
+} from '@nestjs/common';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectModel } from '@nestjs/sequelize';
 import { User } from './model/user.model';
 import { JwtService } from '@nestjs/jwt';
@@ -18,15 +18,25 @@ import { MailService } from '../mail/mail.service';
 import { log } from 'console';
 import { LoginUserDto } from './dto/login-user.dto';
 import { FindUserDto } from './dto/find-user.dto';
-import { Op } from 'sequelize';
+import { Op, where } from 'sequelize';
+import { PhoneUserDto } from './dto/phone-user.dto';
+import * as otpGenerator from 'otp-generator';
+import { BotService } from '../bot/bot.service';
+import { Otp } from '../otp/models/otp.model';
+import { AddMinutesToDate } from '../helpers/addMinutes';
+import { timestamp } from 'rxjs';
+import { dates, decode, encode } from '../helpers/crypto';
+import { VerifyOtpDto } from './dto/verify-ot.dto';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectModel(User) private readonly userRepo: typeof User,
+    @InjectModel(Otp) private readonly otpRepo: typeof Otp,
     private readonly jwtService: JwtService,
     private fileUpload: FileService,
     private readonly mailService: MailService,
+    private readonly botService: BotService,
   ) {}
 
   // token yasash funksiyasi
@@ -274,6 +284,88 @@ export class UsersService {
     }
 
     return users;
+  }
+
+  async newOtp(phoneUserDto: PhoneUserDto) {
+    const phone_number = phoneUserDto.phone;
+
+    const otp = otpGenerator.generate(4, {
+      upperCaseAlphabets: false,
+      lowerCaseAlphabets: false,
+      specialChars: false,
+    });
+    const isSend = await this.botService.sendOtp(phone_number, otp);
+    if (!isSend) {
+      throw new BadRequestException('Avval botdan royxatdan oting');
+    }
+    const now = new Date();
+    const expiration_time = AddMinutesToDate(now, 5);
+    await this.otpRepo.destroy({
+      where: { check: phone_number },
+    });
+    const newOtp = await this.otpRepo.create({
+      id: v4(),
+      otp,
+      expiration_time,
+      check: phone_number,
+    });
+
+    const details = {
+      timestamp: now,
+      check: phone_number,
+      otp_id: newOtp.id,
+    };
+    const encoded = await encode(JSON.stringify(details));
+
+    return { status: 'OK', details: encoded };
+  }
+
+  async verifyOtp(veriFyOtpDto: VerifyOtpDto) {
+    const { verification_key, otp, check } = veriFyOtpDto;
+    const currentDate = new Date();
+    const decoded = await decode(verification_key);
+    const details = JSON.parse(decoded);
+    if (details.check != check) {
+      throw new BadRequestException('OTP bu raqamga yuborilmagan');
+    }
+    const resultOtp = await this.otpRepo.findOne({
+      where: { id: details.otp_id },
+    });
+
+    if (resultOtp == null) {
+      throw new BadRequestException("Bunday OTP yo'q");
+    }
+    if (resultOtp.verified) {
+      throw new BadRequestException('Bu OTP allaqachon tekshirilgan');
+    }
+    if (!dates.compare(resultOtp.expiration_time, currentDate)) {
+      throw new BadRequestException('Bu OTPning vaqti tugagan');
+    }
+    if (otp !== resultOtp.otp) {
+      throw new BadRequestException('OTP mos emas');
+    }
+    const user = await this.userRepo.update(
+      {
+        is_owner: true,
+      },
+      {
+        where: { phone: check },
+        returning: true,
+      },
+    );
+    if (!user[1][0]) {
+      throw new BadRequestException("Bunday Foydalanuvchi yo'q");
+    }
+    await this.otpRepo.update(
+      { verified: true },
+      { where: { id: details.otp_id } },
+    );
+
+    const response = {
+      message: "Siz owner bo'ldingiz",
+      user: user[1][0],
+    };
+    return response;
   }
 
   findAll() {

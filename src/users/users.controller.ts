@@ -23,6 +23,8 @@ import { LoginUserDto } from './dto/login-user.dto';
 import { CookieGetter } from '../decorators/cookie_getter.decorator';
 import { UserGuard } from '../guards/user.guard';
 import { FindUserDto } from './dto/find-user.dto';
+import { PhoneUserDto } from './dto/phone-user.dto';
+import { VerifyOtpDto } from './dto/verify-ot.dto';
 @ApiTags('Users')
 @Controller('users')
 export class UsersController {
@@ -102,8 +104,20 @@ export class UsersController {
   }
 
   @HttpCode(200)
-  @Post("find")
+  @Post('find')
   findUser(@Body() findUserDto: FindUserDto) {
     return this.usersService.findUser(findUserDto);
+  }
+
+  @HttpCode(200)
+  @Post('newotp')
+  newOtp(@Body() phoneUserDto: PhoneUserDto) {
+    return this.usersService.newOtp(phoneUserDto);
+  }
+
+  @HttpCode(200)
+  @Post('verifyotp')
+  verifyOtp(@Body() verifyOtpDto: VerifyOtpDto) {
+    return this.usersService.verifyOtp(verifyOtpDto);
   }
 }

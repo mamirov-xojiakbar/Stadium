@@ -25,6 +25,11 @@ export class BotUpdate {
     await this.botServise.onContact(ctx);
   }
 
+  @Command('stop')
+  async onStop(@Ctx() ctx: Context) {
+    await this.botServise.onStop(ctx);
+  }
+
   // @On('photo')
   // async onPhoto(@Ctx() ctx: Context) {
   //   if ('photo' in ctx.message) {
@@ -110,39 +115,39 @@ export class BotUpdate {
 
   // @Command('inline_keyboard')
   // async inlineButton(@Ctx() ctx: Context) {
-  //   const inlineKeyboard = [
-  //     [
-  //       {
-  //         text: 'Button 1',
-  //         callback_data: 'button1',
-  //       },
-  //       {
-  //         text: 'Button 2',
-  //         callback_data: 'button2',
-  //       },
-  //       {
-  //         text: 'Button 3',
-  //         callback_data: 'button3',
-  //       },
-  //     ],
-  //     [
-  //       {
-  //         text: 'Button 4',
-  //         callback_data: 'button4',
-  //       },
-  //     ],
-  //     [
-  //       {
-  //         text: 'Button 5',
-  //         callback_data: 'button5',
-  //       },
-  //     ],
-  //   ];
-  //   await ctx.reply('Inline buttonni tanla:', {
-  //     reply_markup: {
-  //       inline_keyboard: inlineKeyboard,
+  // const inlineKeyboard = [
+  //   [
+  //     {
+  //       text: 'Button 1',
+  //       callback_data: 'button1',
   //     },
-  //   });
+  //     {
+  //       text: 'Button 2',
+  //       callback_data: 'button2',
+  //     },
+  //     {
+  //       text: 'Button 3',
+  //       callback_data: 'button3',
+  //     },
+  //   ],
+  //   [
+  //     {
+  //       text: 'Button 4',
+  //       callback_data: 'button4',
+  //     },
+  //   ],
+  //   [
+  //     {
+  //       text: 'Button 5',
+  //       callback_data: 'button5',
+  //     },
+  //   ],
+  // ];
+  // await ctx.reply('Inline buttonni tanla:', {
+  //   reply_markup: {
+  //     inline_keyboard: inlineKeyboard,
+  //   },
+  // });
   // }
 
   // @Action('button1')

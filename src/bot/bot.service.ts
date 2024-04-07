@@ -12,7 +12,6 @@ export class BotService {
     @InjectBot(BOT_NAME) private readonly bot: Telegraf<Context>,
   ) {}
 
-  
   async start(ctx: Context) {
     const userId = ctx.from.id;
     const user = await this.botRepo.findByPk(userId);
@@ -42,6 +41,7 @@ export class BotService {
           .oneTime(),
       });
     } else {
+      await this.bot.telegram.sendChatAction(user.user_id, 'typing');
       await ctx.reply(
         `Bu bot orqali stadium dasturi bilan muloqot ornatiladi!`,
         {
@@ -51,7 +51,6 @@ export class BotService {
       );
     }
   }
-
 
   async onContact(ctx: Context) {
     if ('contact' in ctx.message) {
@@ -87,5 +86,47 @@ export class BotService {
         });
       }
     }
+  }
+
+  async onStop(ctx: Context) {
+    const userId = ctx.from.id;
+    const user = await this.botRepo.findByPk(userId);
+    if (!user) {
+      await ctx.reply(`you haven't registered yet, send /start command`, {
+        parse_mode: 'HTML',
+        ...Markup.keyboard([['/start']])
+          .resize()
+          .oneTime(),
+      });
+    } else if (user.status) {
+      await this.botRepo.update(
+        {
+          status: false,
+          phone_number: null,
+        },
+        { where: { user_id: userId } },
+      );
+      await ctx.reply(
+        `successfully unregistered from bot, send /start command to start`,
+        {
+          parse_mode: 'HTML',
+          ...Markup.keyboard([['/start']])
+            .resize()
+            .oneTime(),
+        },
+      );
+    }
+  }
+
+  async sendOtp(phoneNumber: string, OTP: string): Promise<boolean> {
+    const user = await this.botRepo.findOne({
+      where: { phone_number: phoneNumber },
+    });
+    if (!user || !user.status) {
+      return false;
+    }
+    await this.bot.telegram.sendChatAction(user.user_id, 'typing');
+    await this.bot.telegram.sendMessage(user.user_id, 'Verify code: ' + OTP);
+    return true;
   }
 }

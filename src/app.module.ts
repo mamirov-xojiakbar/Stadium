@@ -23,6 +23,8 @@ import { BOT_NAME } from './app.constants';
 import { CommentsModule } from './comments/comments.module';
 import { Comment } from './comments/models/comment.model';
 import { Bot } from './bot/models/bot.model';
+import { OtpModule } from './otp/otp.module';
+import { Otp } from './otp/models/otp.model';
 
 @Module({
   imports: [
@@ -52,6 +54,7 @@ import { Bot } from './bot/models/bot.model';
         Stadium,
         Comment,
         Bot,
+        Otp,
       ],
       autoLoadModels: true,
       sync: { alter: true },
@@ -68,6 +71,7 @@ import { Bot } from './bot/models/bot.model';
     MediaModule,
     BotModule,
     CommentsModule,
+    OtpModule,
   ],
   controllers: [],
   providers: [],
