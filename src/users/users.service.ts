@@ -3,6 +3,7 @@ import {
   ForbiddenException,
   Injectable,
   InternalServerErrorException,
+  ServiceUnavailableException,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -27,6 +28,7 @@ import { AddMinutesToDate } from '../helpers/addMinutes';
 import { timestamp } from 'rxjs';
 import { dates, decode, encode } from '../helpers/crypto';
 import { VerifyOtpDto } from './dto/verify-ot.dto';
+import { SmsService } from '../sms/sms.service';
 
 @Injectable()
 export class UsersService {
@@ -37,6 +39,7 @@ export class UsersService {
     private fileUpload: FileService,
     private readonly mailService: MailService,
     private readonly botService: BotService,
+    private readonly smsService: SmsService,
   ) {}
 
   // token yasash funksiyasi
@@ -298,6 +301,16 @@ export class UsersService {
     if (!isSend) {
       throw new BadRequestException('Avval botdan royxatdan oting');
     }
+
+    const resp = await this.smsService.sendSms(phone_number, otp);
+    if (resp.status !== 200) {
+      throw new ServiceUnavailableException('OTP yuborishda xatolik');
+    }
+
+    const message =
+      'Code has been send to ****' +
+      phone_number.slice(phone_number.length - 4);
+
     const now = new Date();
     const expiration_time = AddMinutesToDate(now, 5);
     await this.otpRepo.destroy({
@@ -317,7 +330,7 @@ export class UsersService {
     };
     const encoded = await encode(JSON.stringify(details));
 
-    return { status: 'OK', details: encoded };
+    return { status: 'OK', details: encoded, message };
   }
 
   async verifyOtp(veriFyOtpDto: VerifyOtpDto) {

@@ -25,6 +25,7 @@ import { Comment } from './comments/models/comment.model';
 import { Bot } from './bot/models/bot.model';
 import { OtpModule } from './otp/otp.module';
 import { Otp } from './otp/models/otp.model';
+import { SmsModule } from './sms/sms.module';
 
 @Module({
   imports: [
@@ -72,6 +73,7 @@ import { Otp } from './otp/models/otp.model';
     BotModule,
     CommentsModule,
     OtpModule,
+    SmsModule,
   ],
   controllers: [],
   providers: [],
